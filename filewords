@@ -3,15 +3,16 @@
 # words - print unique words from files
 #
 # usage:
-#       find /dir/path -type f -print | words [-h] [-k]
+#       find /dir/path -type f -print | words [-h] [-k] [-i]
 #
 #	-h	skip a 'header' (up thru the first blank line)
 #	-k	keep going dispite file open & read errors / do not report them
+#	-i	fold UPPER to lower case
 
 # usage
 #
 use strict;
-use vars qw($opt_h $opt_k);
+use vars qw($opt_h $opt_k $opt_i);
 use Getopt::Long;
 
 # my vars
@@ -27,11 +28,13 @@ my $word;	# a given word
 #
 my %optctl = (
     "h" => \$opt_h,
-    "k" => \$opt_k
+    "k" => \$opt_k,
+    "i" => \$opt_i
 );
 $opt_h = 0;
 $opt_k = 0;
-$usage = "usage: $0 [-h] [-k]";
+$opt_i = 0;
+$usage = "usage: $0 [-h] [-k] [-i]";
 if (!GetOptions(%optctl)) {
     die("$usage\n");
     exit(1);
@@ -76,7 +79,9 @@ while (defined($filename = <>)) {
 	    # canonocalize the word
 	    #
 	    next if ($word =~ /^\s*$/);
-	    $word =~ tr/A-Z/a-z/;
+	    if ($opt_c) {
+		$word =~ tr/A-Z/a-z/;
+	    }
 	    
 	    # count old words
 	    #
