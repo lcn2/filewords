@@ -76,7 +76,7 @@ while (defined($filename = <>)) {
 	if ($opt_d) {
 	    @WORDLINE = split(/\W+/, $line);
 	} else {
-	    @WORDLINE = split(/[a-zA-z]+/, $line);
+	    @WORDLINE = split(/[^a-zA-Z]+/, $line);
 	}
 
 	# process each word
