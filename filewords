@@ -91,4 +91,8 @@ while (defined($filename = <>)) {
 	    }
 	}
     }
+
+    # cleanup file
+    #
+    close FILE;
 }
