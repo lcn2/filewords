@@ -3,16 +3,17 @@
 # words - print unique words from files
 #
 # usage:
-#       find /dir/path -type f -print | words [-h] [-k] [-i]
+#       find /dir/path -type f -print | words [-h] [-k] [-i] [-d]
 #
 #	-h	skip a 'header' (up thru the first blank line)
 #	-k	keep going dispite file open & read errors / do not report them
 #	-i	fold UPPER to lower case
+#	-d	allow digits and _'s in words
 
 # usage
 #
 use strict;
-use vars qw($opt_h $opt_k $opt_i);
+use vars qw($opt_h $opt_k $opt_i $opt_d);
 use Getopt::Long;
 
 # my vars
@@ -29,12 +30,14 @@ my $word;	# a given word
 my %optctl = (
     "h" => \$opt_h,
     "k" => \$opt_k,
-    "i" => \$opt_i
+    "i" => \$opt_i,
+    "d" => \$opt_d
 );
 $opt_h = 0;
 $opt_k = 0;
 $opt_i = 0;
-$usage = "usage: $0 [-h] [-k] [-i]";
+$opt_d = 0;
+$usage = "usage: $0 [-h] [-k] [-i] [-d]";
 if (!GetOptions(%optctl)) {
     die("$usage\n");
     exit(1);
@@ -70,7 +73,11 @@ while (defined($filename = <>)) {
 
 	# canonocalize the line into words
 	#
-	@WORDLINE = split(/\W+/, $line);
+	if ($opt_d) {
+	    @WORDLINE = split(/\W+/, $line);
+	} else {
+	    @WORDLINE = split(/[a-zA-z]+/, $line);
+	}
 
 	# process each word
 	#
