@@ -79,7 +79,7 @@ while (defined($filename = <>)) {
 	    # canonocalize the word
 	    #
 	    next if ($word =~ /^\s*$/);
-	    if ($opt_c) {
+	    if ($opt_i) {
 		$word =~ tr/A-Z/a-z/;
 	    }
 	    
