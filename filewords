@@ -1,0 +1,94 @@
+#!/usr/bin/perl -w
+#
+# words - print unique words from files
+#
+# usage:
+#       find /dir/path -type f -print | words [-h] [-k]
+#
+#	-h	skip a 'header' (up thru the first blank line)
+#	-k	keep going dispite file open & read errors / do not report them
+
+# usage
+#
+use strict;
+use vars qw($opt_h $opt_k);
+use Getopt::Long;
+
+# my vars
+#
+my $filename;	# current file to open
+my $usage;	# usage message
+my $line;	# current line of text
+my @WORDLINE;	# words from the given line
+my %wordlist;	# list of words found and their find count
+my $word;	# a given word
+
+# parse args
+#
+my %optctl = (
+    "h" => \$opt_h,
+    "k" => \$opt_k
+);
+$opt_h = 0;
+$opt_k = 0;
+$usage = "usage: $0 [-h] [-k]";
+if (!GetOptions(%optctl)) {
+    die("$usage\n");
+    exit(1);
+}
+
+# process each file
+#
+while (defined($filename = <>)) {
+    
+    # open the file
+    #
+    chomp $filename;
+    if (!open(FILE, "<$filename")) {
+	if ($opt_k) {
+	    # ignore open error
+	    next;
+	} else {
+	    die("$0: cannot open $filename\n");
+	}
+    }
+
+    # skip header if -h
+    #
+    if ($opt_h) {
+	while (defined($line = <FILE>)) {
+	    last if $line =~ /^\n$/;
+	}
+    }
+
+    # process each line in the file
+    #
+    while (defined($line = <FILE>)) {
+
+	# canonocalize the line into words
+	#
+	@WORDLINE = split(/\W+/, $line);
+
+	# process each word
+	#
+	foreach $word ( @WORDLINE ) {
+
+	    # canonocalize the word
+	    #
+	    next if ($word =~ /^\s*$/);
+	    $word =~ tr/A-Z/a-z/;
+	    
+	    # count old words
+	    #
+	    if (defined($wordlist{$word})) {
+		++$wordlist{$word};
+
+	    # report on a new word
+	    #
+	    } else {
+		print "$word\n";
+		$wordlist{$word} = 1;
+	    }
+	}
+    }
+}
