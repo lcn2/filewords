@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 #
-# words - print unique words from files
+# filewords - print unique words from files
 #
 # usage:
 #       find /dir/path -type f -print | words [-h] [-k] [-i] [-d]

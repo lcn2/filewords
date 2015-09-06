@@ -1,12 +1,12 @@
 #!/usr/bin/make
 #
-# words - print unique words from files
+# filewords - print unique words from files
 #
-# @(#) $Revision: 1.2 $
-# @(#) $Id: Makefile,v 1.2 1999/10/08 00:23:05 chongo Exp $
-# @(#) $Source: /usr/local/src/cmd/aliasbox/RCS/Makefile,v $
+# @(#) $Revision: 1.1 $
+# @(#) $Id: Makefile,v 1.1 1999/10/26 01:11:26 chongo Exp root $
+# @(#) $Source: /usr/local/src/bin/filewords/RCS/Makefile,v $
 #
-# Copyright (c) 1999 by Landon Curt Noll.  All Rights Reserved.
+# Copyright (c) 1999,2015 by Landon Curt Noll.  All Rights Reserved.
 #
 # Permission to use, copy, modify, and distribute this software and
 # its documentation for any purpose and without fee is hereby granted,
@@ -32,10 +32,10 @@ CC= cc
 CFLAGS= -O2
 INSTALL= install
 
-all: words
+all: filewords
 
 install: all
-	${INSTALL} -m 0555 words ${DESTDIR}
+	${INSTALL} -m 0555 filewords ${DESTDIR}
 
 clean:
 clobber:
