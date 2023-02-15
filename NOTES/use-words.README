@@ -1,0 +1,28 @@
+Executed:
+
+    #!/bin/sh
+
+    cd /var/spool/news
+    find comp rec soc talk misc sci news -type f -print 2>/dev/null | /usr/people/chongo/bin/words -h -k
+
+on news.corp.sgi.com with 21 days of spool for each of the above top level
+newsgroups from Oct 25 1999 thru Oct 27 1999.  I.e., usenet-words.list is
+the list of words (sets of [A-Za-z], not \w) found after the news header.
+
+cksum usenet-words.list:
+
+	2524830553 79347712 usenet-words.list
+
+wc -l usenet-words.list:
+
+	8881819 usenet-words.list
+
+du -s -k
+
+	1083232 comp
+	2758848 rec
+	804122  soc
+	240054  talk
+	461420  misc
+	260066  sci
+	1543154 news
