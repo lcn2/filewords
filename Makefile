@@ -1,12 +1,8 @@
-#!/usr/bin/make
+#!/usr/bin/env make
 #
 # filewords - print unique words from files
 #
-# @(#) $Revision: 1.2 $
-# @(#) $Id: Makefile,v 1.2 2015/09/06 07:50:39 root Exp $
-# @(#) $Source: /usr/local/src/bin/filewords/RCS/Makefile,v $
-#
-# Copyright (c) 1999,2015 by Landon Curt Noll.  All Rights Reserved.
+# Copyright (c) 1999,2015,2023 by Landon Curt Noll.  All Rights Reserved.
 #
 # Permission to use, copy, modify, and distribute this software and
 # its documentation for any purpose and without fee is hereby granted,
@@ -26,10 +22,8 @@
 # OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 # PERFORMANCE OF THIS SOFTWARE.
 
-SHELL= /bin/sh
+SHELL= bash
 DESTDIR= /usr/local/bin
-CC= cc
-CFLAGS= -O2
 INSTALL= install
 
 all: filewords
