@@ -1,16 +1,8 @@
-#!/usr/bin/env perl -w
+#!/usr/bin/env perl
 #
 # filewords - print unique words from files
 #
-# usage:
-#       find /dir/path -type f -print | words [-h] [-k] [-i] [-d]
-#
-#	-h	skip a 'header' (up thru the first blank line)
-#	-k	keep going dispite file open & read errors / do not report them
-#	-i	fold UPPER to lower case
-#	-d	allow digits and _'s in words
-#
-# Copyright (c) 2015,2023 by Landon Curt Noll.  All Rights Reserved.
+# Copyright (c) 1999,2004,2015,2023,2025 by Landon Curt Noll.  All Rights Reserved.
 #
 # Permission to use, copy, modify, and distribute this software and
 # its documentation for any purpose and without fee is hereby granted,
@@ -30,19 +22,29 @@
 # OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 # PERFORMANCE OF THIS SOFTWARE.
 #
-# chongo (Landon Curt Noll, http://www.isthe.com/chongo/index.html) /\oo/\
+# chongo (Landon Curt Noll) /\oo/\
 #
-# Share and enjoy! :-)
+# http://www.isthe.com/chongo/index.html
+# https://github.com/lcn2
+#
+# Share and enjoy!  :-)
+
 
 # usage
 #
 use strict;
 use bytes;
-use vars qw($opt_h $opt_k $opt_i $opt_d);
-use Getopt::Long;
+use vars qw($opt_h $opt_v $opt_V $opt_H $opt_k $opt_i $opt_d);
+use Getopt::Long qw(:config no_ignore_case);
+use File::Basename;
+
+# version
+#
+my $VERSION = "1.1.1 2025-03-30";
 
 # my vars
 #
+my $NAME = basename($0);
 my $filename;	# current file to open
 my $usage;	# usage message
 my $line;	# current line of text
@@ -50,86 +52,177 @@ my @WORDLINE;	# words from the given line
 my %wordlist;	# list of words found and their find count
 my $word;	# a given word
 
-# parse args
+
+# usage and help
 #
+my $usage = "$NAME [-h] [-v lvl] [-V] [-H] [-k] [-i] [-d]";
+my $help = qq{$usage
+
+    -h              print help and exit
+    -v lvl          verbose / debug level
+    -V              print version and exit
+
+    -H              skip a 'header' (up thru the first blank line)
+    -k              keep going dispite file open & read errors / do not report them
+    -i              fold UPPER to lower case
+    -d              allow digits and _'s in words
+
+NOTE: This command will read filenames to open and process on stdin.  For example:
+
+    echo Makefile | $NAME
+
+    ls -1 | $NAME
+
+    find /some/path -type f -print | $NAME
+
+$NAME version: $VERSION};
 my %optctl = (
     "h" => \$opt_h,
+    "v=i" => \$opt_v,
+    "V" => \$opt_V,
+    "H" => \$opt_H,
     "k" => \$opt_k,
     "i" => \$opt_i,
     "d" => \$opt_d
 );
-$opt_h = 0;
-$opt_k = 0;
-$opt_i = 0;
-$opt_d = 0;
-$usage = "usage: $0 [-h] [-k] [-i] [-d]";
-if (!GetOptions(%optctl)) {
-    die("$usage\n");
-    exit(1);
-}
+
+
+# function prototypes
+#
+sub error($@);
+
 
 # process each file
 #
-while (defined($filename = <>)) {
-    
-    # open the file
-    #
-    chomp $filename;
-    if (!open(FILE, "<$filename")) {
-	if ($opt_k) {
-	    # ignore open error
-	    next;
-	} else {
-	    die("$0: cannot open $filename\n");
-	}
-    }
+MAIN: {
 
-    # skip header if -h
+    # setup
     #
+    select(STDOUT);
+    $| = 1;
+    #
+    $opt_h = 0;
+    $opt_v = 0;
+    $opt_V = 0;
+    $opt_H = 0;
+    $opt_k = 0;
+    $opt_i = 0;
+    $opt_d = 0;
+
+    # parse args
+    #
+    if (!GetOptions(%optctl)) {
+        error(1, "invalid command line\nusage: $help");
+    }
     if ($opt_h) {
-	while (defined($line = <FILE>)) {
-	    last if $line =~ /^\n$/;
-	}
+        print "$help\n";
+        exit(0);
+    }
+    if ($opt_V) {
+        print "$VERSION\n";
+        exit(0);
     }
 
-    # process each line in the file
+    # process files on the command line, or stdin
     #
-    while (defined($line = <FILE>)) {
+    while (defined($filename = <>)) {
 
-	# canonocalize the line into words
+	# open the file
 	#
-	if ($opt_d) {
-	    @WORDLINE = split(/\W+/, $line);
-	} else {
-	    @WORDLINE = split(/[^a-zA-Z]+/, $line);
-	}
-
-	# process each word
-	#
-	foreach $word ( @WORDLINE ) {
-
-	    # canonocalize the word
-	    #
-	    next if ($word =~ /^\s*$/);
-	    if ($opt_i) {
-		$word =~ tr/A-Z/a-z/;
-	    }
-	    
-	    # count old words
-	    #
-	    if (defined($wordlist{$word})) {
-		++$wordlist{$word};
-
-	    # report on a new word
-	    #
+	chomp $filename;
+	if (!open(FILE, "<$filename")) {
+	    if ($opt_k) {
+		# ignore open error
+		next;
 	    } else {
-		print "$word\n";
-		$wordlist{$word} = 1;
+		die("$0: cannot open $filename\n");
 	    }
 	}
+
+	# skip header if -h
+	#
+	if ($opt_H) {
+	    while (defined($line = <FILE>)) {
+		last if $line =~ /^\n$/;
+	    }
+	}
+
+	# process each line in the file
+	#
+	while (defined($line = <FILE>)) {
+
+	    # canonicalize the line into words
+	    #
+	    if ($opt_d) {
+		@WORDLINE = split(/\W+/, $line);
+	    } else {
+		@WORDLINE = split(/[^a-zA-Z]+/, $line);
+	    }
+
+	    # process each word
+	    #
+	    foreach $word ( @WORDLINE ) {
+
+		# canonicalize the word
+		#
+		next if ($word =~ /^\s*$/);
+		if ($opt_i) {
+		    $word =~ tr/A-Z/a-z/;
+		}
+
+		# count old words
+		#
+		if (defined($wordlist{$word})) {
+		    ++$wordlist{$word};
+
+		# report on a new word
+		#
+		} else {
+		    print "$word\n";
+		    $wordlist{$word} = 1;
+		}
+	    }
+	}
+
+	# cleanup file
+	#
+	close FILE;
+    }
+    exit(0);
+}
+
+
+# error - report an error and exit
+#
+# given:
+#       $exitval        exit code value
+#       $msg ...        error debug message to print
+#
+sub error($@)
+{
+    my ($exitval) = shift @_;   # get args
+    my $msg;                    # error message to print
+
+    # parse args
+    #
+    if (!defined $exitval) {
+        $exitval = 254;
+    }
+    if ($#_ < 0) {
+        $msg = "<<< no message supplied >>>";
+    } else {
+        $msg = join(' ', @_);
+    }
+    if ($exitval =~ /\D/) {
+        $msg .= "<<< non-numeric exit code: $exitval >>>";
+        $exitval = 253;
     }
 
-    # cleanup file
+    # issue the error message
     #
-    close FILE;
+    print STDERR "$0: $msg\n";
+
+    # issue an error message
+    #
+    exit($exitval);
 }
